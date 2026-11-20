@@ -33,8 +33,12 @@ Training needs a GPU. Use the notebook [notebooks/run_on_colab_kaggle.ipynb](not
 on Google Colab (T4) or Kaggle; it runs every step in order. [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md)
 explains each experiment, the expected reference numbers and rough run times.
 
-To get the code onto Colab, push this repository to GitHub and set `REPO_URL` in the
-notebook, or upload a zip to Google Drive:
+The notebook clones this public repository (`REPO_URL` in its first cell), so no setup is
+needed. If the repository is ever made private, add a GitHub fine-grained personal access
+token with read access to it as a secret named `GITHUB_TOKEN` (Colab: key icon in the left
+sidebar, then enable notebook access; Kaggle: Add-ons > Secrets); the notebook uses it
+without printing or storing it. Alternatively, set `REPO_URL = ""` and upload a zip to
+Google Drive:
 
 ```bash
 cd .. && zip -r Speech-Processing.zip Speech-Processing -x "Speech-Processing/.venv/*" "Speech-Processing/.git/*" "Speech-Processing/cache/*" "Speech-Processing/runs/*" "*.pdf"
