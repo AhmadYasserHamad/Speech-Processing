@@ -1,0 +1,59 @@
+# Data preparation: download the authors' preprocessed Hugging Face datasets
+# (Ozyilmaz et al., Interspeech 2025) and turn them into a compact, cleaned local cache.
+#
+#   python scripts/prepare_data.py --config configs/data.yaml --sources msa
+#   python scripts/prepare_data.py --config configs/data.yaml --sources egyptian gulf iraqi levantine maghrebi
+#
+# Set ASR_CACHE to a fast local disk (e.g. /content/cache on Colab, /kaggle/temp/cache on Kaggle).
+
+cache_dir: ${ASR_CACHE:-cache}
+tokenizer_name: openai/whisper-small
+
+sources:
+  # Mozilla Common Voice 16.1 Arabic (treated as MSA). Ships 16 kHz WAV, sentence and
+  # speaker/gender/age metadata, so we redo feature extraction and augmentation ourselves.
+  msa:
+    kind: audio
+    variety: MSA (Common Voice 16.1)
+    train_repo: otozz/MSA_train_set      # original CV train + validation merged (~40 h)
+    test_repo: otozz/MSA_test_set        # original CV test (~13 h, 10,478 utterances)
+  # MASC dialect groups, capped at 20 h each by the authors. Ship only log-Mel features
+  # (80 x 3000) and Whisper token ids: text is recovered by decoding the ids.
+  egyptian:
+    kind: features
+    variety: Egyptian (MASC)
+    train_repo: otozz/egyptian_train_set
+    test_repo: otozz/egyptian_test_set
+  gulf:
+    kind: features
+    variety: Gulf (MASC)
+    train_repo: otozz/gulf_train_set
+    test_repo: otozz/gulf_test_set
+  iraqi:
+    kind: features
+    variety: Iraqi (MASC)
+    train_repo: otozz/iraqi_train_set
+    test_repo: otozz/iraqi_test_set
+  levantine:
+    kind: features
+    variety: Levantine (MASC)
+    train_repo: otozz/levantine_train_set
+    test_repo: otozz/levantine_test_set
+  maghrebi:
+    kind: features
+    variety: Maghrebi (MASC)
+    train_repo: otozz/maghrebi_train_set
+    test_repo: otozz/maghrebi_test_set
+
+# Filters apply to TRAINING rows only; test sets are kept intact so our numbers stay
+# comparable with the paper. Rationale for each rule: docs/PREPROCESSING.md.
+filters:
+  min_duration_s: 0.1          # Paper 2 (NVIDIA): drop clips shorter than 0.1 s
+  max_duration_s: 30.0         # Whisper's input window (Paper 2 used 20 s for its own model)
+  max_label_tokens: 448        # Paper 3: Whisper decoder limit
+  drop_music: true             # MASC subtitles of songs ("♪ ... ♪"); Paper 2 also removes music
+  speaking_rate_iqr_k: 3.0     # Paper 2's char-rate outlier filter, as Tukey fences on log(chars/s)
+  leakage_min_words: 1         # drop training sentences that also occur in the test set (Paper 2)
+
+read_batch_rows: 32
+download_retries: 3

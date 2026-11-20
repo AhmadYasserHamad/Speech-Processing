@@ -1,0 +1,44 @@
+# Tiny end-to-end check that runs on a laptop CPU in a few minutes.
+# Uses whisper-tiny and a handful of rows prepared with --max-rows:
+#
+#   python scripts/prepare_data.py --config configs/data.yaml --sources msa egyptian --max-rows 48
+#   python scripts/train.py --config configs/smoke_cpu.yaml
+#
+# Numbers produced by this run are meaningless; it only proves the pipeline works.
+
+name: smoke_cpu
+output_dir: ${ASR_RUNS:-runs}/smoke_cpu
+description: Pipeline smoke test (whisper-tiny, a few steps, CPU).
+
+data:
+  cache_dir: ${ASR_CACHE:-cache}
+  train_sources: [egyptian]
+  msa_replay_fraction: 0.25
+  text_level: light
+  val_fraction: 0.25
+  split_seed: 42
+  speaker_disjoint_msa: true
+  max_train_samples_per_source: 32
+  val_loss_samples: 8
+  val_wer_samples: 4
+  augmentation:
+    enabled: true
+
+model:
+  name_or_path: openai/whisper-tiny
+  tokenizer_name: openai/whisper-small
+  gradient_checkpointing: true
+
+training:
+  seed: 42
+  max_steps: 6
+  batch_size: 2
+  eval_batch_size: 4
+  learning_rate: 1.0e-5
+  warmup_steps: 2
+  precision: fp32
+  eval_every: 3
+  log_every: 1
+  early_stopping_patience: 3
+  num_workers: 0
+  val_max_new_tokens: 16

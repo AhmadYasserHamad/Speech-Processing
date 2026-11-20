@@ -1,0 +1,68 @@
+# E3 (optional): dialect-specific model, same recipe as E2 but trained on Egyptian only.
+# Compared with E2 it answers the paper's RQ3 (dialect-specific vs pooled) under our
+# preprocessing. Paper reference (Egyptian model on Egyptian test, with MSA step): 72.15% WER.
+#
+#   python scripts/train.py --config configs/e3_egyptian.yaml
+
+name: e3_egyptian
+output_dir: ${ASR_RUNS:-runs}/e3_egyptian
+description: E1 checkpoint fine-tuned on Egyptian MASC only, with 15% MSA replay.
+
+data:
+  cache_dir: ${ASR_CACHE:-cache}
+  train_sources: [egyptian]
+  msa_replay_fraction: 0.15
+  text_level: light
+  val_fraction: 0.2
+  split_seed: 42
+  speaker_disjoint_msa: true
+  val_loss_samples: 1600
+  val_wer_samples: 300
+  augmentation:
+    enabled: true
+    speed_perturb_prob: 0.5
+    speed_factors: [0.9, 1.1]
+    gain_prob: 0.3
+    gain_db: [-6.0, 6.0]
+    noise_prob: 0.3
+    noise_snr_db: [15.0, 40.0]
+    specaugment_prob: 1.0
+    freq_masks: 2
+    freq_mask_width: 15
+    time_masks: 4
+    time_mask_max_ratio: 0.05
+
+model:
+  name_or_path: ${ASR_RUNS:-runs}/e1_msa/best
+  tokenizer_name: openai/whisper-small
+  language: arabic
+  task: transcribe
+  gradient_checkpointing: true
+  freeze_encoder: false
+
+training:
+  seed: 42
+  max_steps: 5000
+  batch_size: 8
+  eval_batch_size: 16
+  grad_accum_steps: 1
+  learning_rate: 1.0e-5
+  warmup_steps: 500
+  adam_betas: [0.9, 0.99]
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  precision: auto
+  eval_every: 250
+  log_every: 25
+  early_stopping_metric: val_loss
+  early_stopping_patience: 3
+  early_stopping_threshold: 0.001
+  num_workers: 2
+  val_max_new_tokens: 160
+  resume: true
+  save_resumable: true
+
+hub:
+  push: false
+  repo_id: null
+  private: true

@@ -1,0 +1,70 @@
+# E1: fine-tune openai/whisper-small on MSA (Common Voice 16.1 Arabic).
+# Reproduces the paper's "100% MSA" model (RQ1) with our preprocessing on top:
+# normalised targets, leakage removal, speaker-disjoint validation, augmentation.
+#
+#   python scripts/train.py --config configs/e1_msa.yaml
+#
+# Paper reference (raw scoring, CV test): 45.93% WER / 20.11% CER [Ozyilmaz et al., Fig. 1].
+
+name: e1_msa
+output_dir: ${ASR_RUNS:-runs}/e1_msa
+description: Whisper-small fine-tuned on Common Voice Arabic (MSA) with light-normalised targets.
+
+data:
+  cache_dir: ${ASR_CACHE:-cache}
+  train_sources: [msa]
+  msa_replay_fraction: 0.0
+  text_level: light
+  val_fraction: 0.2
+  split_seed: 42
+  speaker_disjoint_msa: true
+  val_loss_samples: 2000
+  val_wer_samples: 400
+  augmentation:
+    enabled: true
+    speed_perturb_prob: 0.5
+    speed_factors: [0.9, 1.1]
+    gain_prob: 0.3
+    gain_db: [-6.0, 6.0]
+    noise_prob: 0.3
+    noise_snr_db: [15.0, 40.0]
+    specaugment_prob: 1.0
+    freq_masks: 2
+    freq_mask_width: 15
+    time_masks: 4
+    time_mask_max_ratio: 0.05
+
+model:
+  name_or_path: openai/whisper-small
+  tokenizer_name: openai/whisper-small
+  language: arabic
+  task: transcribe
+  gradient_checkpointing: true
+  freeze_encoder: false
+
+training:
+  seed: 42
+  max_steps: 5000              # paper's code (paper text says 6,000)
+  batch_size: 8                # paper
+  eval_batch_size: 16
+  grad_accum_steps: 1
+  learning_rate: 1.0e-5        # paper
+  warmup_steps: 500            # paper
+  adam_betas: [0.9, 0.99]      # paper text (the released code silently used 0.999)
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  precision: auto              # fp16 on T4, bf16 on A100, fp32 on CPU
+  eval_every: 250              # paper
+  log_every: 25
+  early_stopping_metric: val_loss   # paper text ("lowest validation loss")
+  early_stopping_patience: 3        # paper
+  early_stopping_threshold: 0.001   # paper's code
+  num_workers: 2
+  val_max_new_tokens: 160
+  resume: true
+  save_resumable: true
+
+hub:
+  push: false
+  repo_id: null                # e.g. your-username/whisper-small-ar-msa
+  private: true

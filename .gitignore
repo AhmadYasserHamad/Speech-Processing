@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets (Hugging Face tokens etc.)
+.env
+
+# Large artifacts: prepared data, checkpoints, logs, downloads
+cache/
+runs/
+lm/
+*.bin
+*.safetensors
+*.pt
+*.ckpt
+hf_cache/
+tensorboard/
+
+# Results are small text files and ARE tracked, except bulky per-utterance dumps
+results/**/nbest.jsonl
+
+# Notebooks / OS / editors
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.idea/
+
+# LaTeX build files (Phase 1 report)
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
