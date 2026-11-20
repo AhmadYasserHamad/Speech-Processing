@@ -1,7 +1,5 @@
-# Multi-dialect Arabic ASR with Whisper-small (Phase 2)
+# Multi-dialect Arabic ASR with Whisper-small
 
-Speech Recognition project, Faculty of Engineering, Alexandria University.
-Team: Ahmad Yasser Hamad (9074), Moamen Talaat (9103), Nadeem Hassan (9109).
 
 This repository reimplements **Paper 3** from our Phase 1 report, Ozyilmaz, Coler and
 Valdenegro-Toro, *Overcoming Data Scarcity in Multi-Dialectal Arabic ASR via Whisper
@@ -14,7 +12,7 @@ missing Arabic text normalisation. For that we adopt the preprocessing of **Pape
 Grigoryan et al. (ICASSP 2025) [5], and report WER at three normalisation levels, so our
 numbers can be compared with the paper's and the effect of spelling can be measured.
 
-## What is implemented (brief, Phase 2, section 1)
+## What is implemented
 
 | Brief item | Where | Notes |
 |---|---|---|
